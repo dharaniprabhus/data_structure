@@ -40,6 +40,9 @@ class BinarySearchTree
                 insertImpl(m_root,data);
             }
         }
+        bool exist(int data){
+            return exist(m_root, data);
+        }
         void inOrder(TreeVisitor& tv){
             inOrderImpl(m_root,tv);
         }
@@ -70,6 +73,11 @@ class BinarySearchTree
             auto right = heightImpl(cur->right) + 1;
             return max(left,right);
         }
+        bool exist(Node* cur, int data){
+            if (!cur)return false;
+            if (cur->data == data)return true;
+            return exist(cur->left, data) || exist(cur->right, data);
+        }
         Node* m_root;
 };
 
@@ -84,5 +92,10 @@ int main()
     cout << "Data : ";
     bst.inOrder(sink);
     cout << "\n";
-    cout << "Height : " << bst.height() << "\n;";
+    cout << "Height : " << bst.height() << "\n";
+
+    bst.insert(5);
+    cout << "Does 5 exist ? " << ((bst.exist(5)) ? "Yes" : "No");
+    cout << "\n";
+    return 0;
 }

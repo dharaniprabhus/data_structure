@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <sstream>
+#include <vector>
 using namespace std;
 
 struct Node
@@ -13,19 +15,35 @@ struct Node
 class TreeVisitor
 {
     public:
-        virtual void visit(int data) = 0;
+        virtual void visit(int data, int sp) = 0;
 };
 
-class OstreamSink : public TreeVisitor
+class TreeSink  : public TreeVisitor
 {
     public:
-        OstreamSink(ostream& out) : m_out{out}{}
-        void visit(int data) override
+        void visit(int data, int sp) override
         {
-            m_out << data << " ";
+            stringstream ss;
+            for(int i = 0; i<sp; ++i){
+                ss << " ";
+            }
+            if (data == INT32_MAX){
+                ss << 'x' << "\n";
+            }else{
+                ss << data << "\n";
+            }
+            m_print.push_back(ss.str());
+            ss.str("");
+            ss.clear();
+        }
+        void show(){
+            int mx_len = 0;
+            for(auto s : m_print){
+                cout << s;
+            }
         }
     private:
-        ostream& m_out;
+        vector<string> m_print;
 };
 
 class AvlTree
@@ -46,6 +64,10 @@ class AvlTree
         void inOrder(TreeVisitor& tv){
             inOrderImpl(m_root,tv);
         }
+        void inOrderRight (TreeVisitor& tv){
+            inOrderRightImpl (m_root,tv,1);
+        }
+
         int height()
         {
             return heightImpl(m_root);
@@ -113,8 +135,18 @@ class AvlTree
         void inOrderImpl(Node* cur,TreeVisitor& v){
             if (cur){
                 inOrderImpl(cur->left,v);
-                v.visit(cur->data);
+                v.visit(cur->data,4);
                 inOrderImpl(cur->right,v);
+            }
+        }
+
+        void inOrderRightImpl (Node* cur, TreeVisitor& v, int sp){
+            if (cur){
+                inOrderRightImpl (cur->right,v, sp + 4);
+                v.visit(cur->data, sp);
+                inOrderRightImpl (cur->left, v, sp + 4);
+            }else{
+                v.visit(INT32_MAX,sp);
             }
         }
 
@@ -147,9 +179,10 @@ int main()
     // bst.insert(4);
     // bst.insert(5);
     // bst.insert(6);
-    OstreamSink sink(cout);
-    cout << "Data : ";
-    bst.inOrder(sink);
+    stringstream ss;
+    TreeSink  sink;
+    bst.inOrderRight (sink);
+    sink.show();
     cout << "\n";
     cout << "Height : " << bst.height() << "\n";
 
